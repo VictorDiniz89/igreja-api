@@ -1,6 +1,7 @@
 const router = require('express').Router()
 
 const dataBase = require('../../database/relogio')
+const modelAgendaOracao = require('../../database/models/agendaOracao')
 
 /// METODOS HTTP
 /**
@@ -10,9 +11,24 @@ const dataBase = require('../../database/relogio')
  * DELETE - Apagar dados, nao tem "corpo"
  */
 
-router.get('/relogio', (req, res) => {
+router.get('/relogio', async (req, res) => {
 
-  const relogio = dataBase.relogio;
+  const relogio = {}
+  const records = await modelAgendaOracao.findAll()
+
+  for(let i = 0; i < 24; i ++){
+    relogio[i.toString()] = {
+     pessoas: []
+    }
+  }
+
+  for(const record of records){
+    console.log(record)
+    const hora = record.hora.toString()
+    if (relogio[hora]) {
+      relogio[hora].pessoas.push({id: record.id, nome: record.nomePessoa}) 
+    } 
+  }
 
   return res.send(relogio)
 })
@@ -36,7 +52,7 @@ router.get('/relogio/:hora', (req, res) => {
 })
 
 // Inclui uma nova pessoa em nosso banco
-router.post('/relogio/:hora', (req, res) => {
+router.post('/relogio/:hora', async (req, res) => {
 
   const relogio = dataBase.relogio;/// carrega o banco de dados
 
@@ -46,9 +62,15 @@ router.post('/relogio/:hora', (req, res) => {
 
   if (horaRelogio) {
     const nome = req.body.nome
-    horaRelogio.pessoas.push({
+    const data = {
       nome, 
       id: horaRelogio.pessoas.length + 1
+    }
+
+    horaRelogio.pessoas.push(data)
+    await modelAgendaOracao.create({
+      nomePessoa: nome,
+      hora: horaParam
     })
     return res.send(horaRelogio)
   }
@@ -57,20 +79,25 @@ router.post('/relogio/:hora', (req, res) => {
 })
 
 // Remove uma pessoa com base no ID do parametro
-router.delete('/relogio/:hora/:id', (req, res) => {
-  const relogio = dataBase.relogio;/// carrega o banco de dados
+router.delete('/relogio/:hora/:id', async (req, res) => {
+ 
 
   const horaParam = Number(req.params.hora)//pega o ID da pessoa solicitada 
   const idPessoa = Number(req.params.id)
-  const horaRelogio = relogio[horaParam]// verifica na lista de pessoas se tem alguma o ID informado no parametro
 
-  if (horaRelogio) {
-    const pessoa = horaRelogio.pessoas.find(item => item.id === idPessoa)
-    if(pessoa)
-      horaRelogio.pessoas.splice( horaRelogio.pessoas.indexOf(pessoa), 1 )    
+  if (! Number.isNaN(horaParam)) {
+    
+   await modelAgendaOracao.destroy({
+    where: {
+      id: idPessoa, 
+      hora: horaParam
+    }
+ 
+   }) 
     
     return res.send('Pessoa removida com sucesso')
   }
+
 
   return res.send(`Pessoa não encontrada para o ID ${horaParam}`)
 })

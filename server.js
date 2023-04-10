@@ -1,8 +1,17 @@
 const express = require('express')
 const bodyParser = require('body-parser')
 const app = express()
-const port = 3000
+const port = process.env.PORT || 3000
 const cors = require('cors')
+
+const dotenv = require('dotenv')
+const env = process.env.NODE_ENV || 'production';
+
+if (dotenv.config({
+    path: `env/${env}.env`
+  }).error) {
+  throw new Error(`Verifique se existe o arquivo .env do ambiente nas pasta env`);
+}
 
 /// configuracao para converter o body para JSON
 app.use(bodyParser.json())
@@ -15,6 +24,11 @@ const relogioRota = require('./modulos/relogio/relogio')
 // Caminho "padrao", da sua API, se nenhuma rota "/" for informada a requisicao cai aqui
 app.get('/', (req, res) => {
   res.send('Ola a API está rodando normalmente!')
+})
+
+// status da aplicaco
+app.get('/health', (req, res) => {
+  res.send('API HEALTH IS OK!')
 })
 
 /// rotas que voce deseja "mapear" na sua API, importe mais acima suas rotas

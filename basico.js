@@ -1,5 +1,5 @@
 /*Crie um objeto que tenha as propriedades: id, descricao, fabricante, valorTotal, 
-cores (este eh um array que deve ter as cores, vermelho, branco e cinza), equipamentos (este eh um array de objetos, 
+cores (este é um array que deve ter as cores, vermelho, branco e cinza), equipamentos (este eh um array de objetos, 
 que deve ter 3 objetos, cada objeto deve ter uma propriedade id, 
 e uma descricao, as descricoes serao: "controle remoto", "fonte 240v bivolt", "Fone de ouvido") */
 
